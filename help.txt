@@ -1,0 +1,86 @@
+OVERVIEW - yolo_img_detector.py
+
+    This program will take in a weights file, a config file, a labels file, and a path to image/images 
+    you would like to pass through the network.
+
+    1. Weights file (ex. yolov3.weights ) = <path to weights file in current directory>
+        - Contains the YOLO network weights
+    2. Config file (ex. yolov3.cfg) = <path to config file in current directory>
+        - Contains configurations such as settings and hyperparameters for the YOLO network,
+    3. Labels file (ex. coco.names) = <path to labels file in current directory>
+        - Contains list of all class names to identify by index
+    4. Path to image or images to pass through network (ex. img/cat.jpg)= <path to image or folder in current directory>
+        - Input image/ images to identify and annotate
+
+    For more information about specific funcationalities, type:
+        - "run" --> for more information on how to run the program
+        - "input_flag" --> for more information on syntax and usage of input flags
+        - "output_flag" --> for more information on what each flag will display
+
+HOW TO RUN:
+
+    To run the code, run the following command:
+    
+    python yolo_img_detector.py <path to config file> <path to weights file> <input flag> 
+        <path to image/images> <path to labels file> <output flags>
+
+INPUT FLAGS:
+    These flags denote what kind of input the user is providing, whether it is a 
+    single image, multiple image paths, or a directory.
+
+    1. “-m” : multiple image paths
+        - Ex. -m  imgs/eagle.jpg imgs/forest.jpg
+    2. “-d” :  directory containing all input images 
+        - Ex. -d imgs
+    3. None: assume single image path
+        - Ex.  imgs/eagle.jpg
+
+    Note: Make sure to specify the input type before providing path to image/images!
+
+OUTPUT FLAGS:
+    These flags specify what information to present about the objects detected in the image. 
+    Users can determine which flags to use to present information about classes detected and inference time. 
+
+    1. "-h" : will display general information and detail program functionality
+    2. “-inf” : will display the average inference time
+    3. “-classes_all” : will display the total number of classes detected
+    4. “-tot_brkdwn” : will print the total number of instances each class was detected
+    5. “-tot_brkdwn_img” : will print the classes and the number of detections for each image.
+
+    Note: The user may specify multiple output flags at the end of the command!
+
+OVERVIEW - yolo_counter.py
+
+    This program will take in a weights file, a config file, a labels file, and
+    a path to a video you would like to pass through the network.
+
+    1. Weights file (ex. yolov3.weights ) = <path to weights file in current directory>
+        - Contains the YOLO network weights
+    2. Config file (ex. yolov3.cfg) = <path to config file in current directory>
+        - Contains configurations such as settings and hyperparameters for the YOLO network,
+    3. Labels file (ex. coco.names) = <path to labels file in current directory>
+        - Contains list of all class names to identify by index
+    4. Path to video pass through network (ex. mot_vid/MOTS20-09-raw.mp4)= <path to video in current directory>
+        - Input video to identify people and annotate
+
+    For more information about specific funcationalities, type:
+        - "run" --> for more information on how to run the program
+        - "output_flag" --> for more information on what each flag will display
+
+HOW TO RUN:
+
+    To run the code, run the following command:
+    
+    python yolo_img_detector.py <path to config file> <path to weights file> 
+    <path to video> <path to labels file> <output flags>
+
+OUTPUT FLAGS:
+    These flags specify what information to present about the objects detected in the image. 
+    Users can determine which flags to use to present information about classes detected and inference time. 
+
+    1. "-h" : will display general information and detail program functionality
+    2. “-inf” : will display the average inference time for entire video
+    3. “-people_all” : will display the total people detected throughout the
+    video
+
+    Note: The user may specify multiple output flags at the end of the command!
