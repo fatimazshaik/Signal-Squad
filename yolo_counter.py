@@ -1,7 +1,6 @@
 import os
 import cv2
 import sys
-from sort import *
 
 import numpy as np
 import time
@@ -76,28 +75,41 @@ def drawBoundingBoxes(output, probability_minimum, w, h):
 # Identify people and display people id per bounding box
 def annotatingImages(results,bounding_boxes, colours, classes, image, labels, confidences, frame_height, frame_width, mot_tracker, max_people, video_name):
     # Get Detections:
-    detections = []
-    for i in results.flatten():
-        if(labels[classes[i]] == "person"):
-            detection =bbConvertToSortCoords(bounding_boxes[i])
-            detection.append(confidences[i])
-            detections.append(detection) # list of all detctions in proper format
-    detections_np = np.array(detections)
+    # detections = []
+    # for i in results.flatten():
+    #     if(labels[classes[i]] == "person"):
+    #         detection =bbConvertToSortCoords(bounding_boxes[i])
+    #         detection.append(confidences[i])
+    #         detections.append(detection) # list of all detctions in proper format
+    # detections_np = np.array(detections)
+    # text_box_person_count = "hello"
 
-    # Update mot_tracker
-    track_bbs_ids = mot_tracker.update(detections_np)
-    for track_obj in track_bbs_ids:
+    # # OG MOTS Tracker
+    # track_bbs_ids = mot_tracker.update(detections_np)
+    # for track_obj in track_bbs_ids:
 
-        x_min, y_min = int(track_obj[0]), int(track_obj[1])
-        box_width, box_height = int(track_obj[2]-track_obj[0]), int(track_obj[3]-track_obj[1])
-        colour_box = [int(j) for j in colours[0]]
+    #     x_min, y_min = int(track_obj[0]), int(track_obj[1])
+    #     box_width, box_height = int(track_obj[2]-track_obj[0]), int(track_obj[3]-track_obj[1])
+    #     colour_box = [int(j) for j in colours[0]]
 
-        id = track_obj[4]
-        max_people = int(max(max_people, id))
-        text_box_person_count = 'People :' + str(max_people)
-        cv2.rectangle(image, (x_min, y_min), (x_min + box_width, y_min + box_height), colour_box, 5)
-        cv2.putText(image, str(int(id)), (x_min, y_min - 7), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colour_box, 5)
-    cv2.putText(image, text_box_person_count, (int(frame_width/2), 50),  cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 5)
+    #     id = track_obj[4]
+    #     max_people = int(max(max_people, id))
+    #     # text_box_person_count = 'People :' + str(max_people)
+    #     cv2.rectangle(image, (x_min, y_min), (x_min + box_width, y_min + box_height), colour_box, 5)
+    #     cv2.putText(image, str(int(id)), (x_min, y_min - 7), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colour_box, 5)
+    #New Code want to Use:
+    list_of_classes = []
+    if len(results) > 0:
+        for i in results.flatten():
+            x_min, y_min = bounding_boxes[i][0], bounding_boxes[i][1]
+            box_width, box_height = bounding_boxes[i][2], bounding_boxes[i][3]
+            colour_box = [int(j) for j in colours[classes[i]]]
+            cv2.rectangle(image, (x_min, y_min), (x_min + box_width, y_min + box_height),
+                        colour_box, 5)
+            text_box = labels[classes[i]] + ': {:.4f}'.format(confidences[i])
+            list_of_classes.append(labels[classes[i]])
+            cv2.putText(image, text_box, (x_min, y_min - 7), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colour_box, 5)
+
     return image, max_people
 
 # Feed the each frame of a video through the YOLO Object Detection Network
@@ -115,7 +127,7 @@ def runYOLO(path_to_cfg, path_to_weights, path_video, path_labels):
     yolo_layers = ['yolo_82', 'yolo_94', 'yolo_106']
 
     #Make sort
-    mot_tracker = Sort() 
+    # mot_tracker = Sort() 
 
     # load video
     cap = cv2.VideoCapture(path_video)
@@ -123,7 +135,7 @@ def runYOLO(path_to_cfg, path_to_weights, path_video, path_labels):
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter("mot_vid/MOTS20-09-result.mp4", fourcc, fps, (frame_width, frame_height))
+    out = cv2.VideoWriter("mot_vid/result.mp4", fourcc, fps, (frame_width, frame_height)) #change video name
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -157,6 +169,7 @@ def runYOLO(path_to_cfg, path_to_weights, path_video, path_labels):
         coco_labels = 80
         np.random.seed(42)
         colours = np.random.randint(0, 255, size=(coco_labels, 3), dtype='uint8')
+        mot_tracker = 0 #intilaize so dont get issue
 
         annotated_frame, max_people = annotatingImages(results,bounding_boxes, colours, classes, frame, labels, confidences, frame_height, frame_width, mot_tracker, max_people, video_name='video')
         inference_time_frame = time.time() - inference_time_frame

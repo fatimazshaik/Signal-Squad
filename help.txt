@@ -71,8 +71,7 @@ HOW TO RUN:
 
     To run the code, run the following command:
     
-    python yolo_img_detector.py <path to config file> <path to weights file> 
-    <path to video> <path to labels file> <output flags>
+    python yolo_counter.py yolo_files/yolov3.cfg yolo_files/yolov3.weights mot_vid/test1-couch.mp4 yolo_files/coco.names
 
 OUTPUT FLAGS:
     These flags specify what information to present about the objects detected in the image. 
