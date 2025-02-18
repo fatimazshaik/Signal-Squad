@@ -37,12 +37,12 @@ num_epochs = 5
 batch_size = 2  
 
 # Pulling data from CSV
-train_x_df = pd.read_csv(r".\data\vibrational_data\x_train.csv", header=None, names=range(250000))
+train_x_df = pd.read_csv(r"..\data\vibrational_data\x_train.csv", header=None, names=range(250000))
 train_x_df = train_x_df.fillna(0)
-train_y_df = pd.read_csv(r".\data\vibrational_data\y_train.csv", header=None) 
-test_x_df = pd.read_csv(r".\data\vibrational_data\x_test.csv", header=None , names=range(250000))
+train_y_df = pd.read_csv(r"..\data\vibrational_data\y_train.csv", header=None) 
+test_x_df = pd.read_csv(r"..\data\vibrational_data\x_test.csv", header=None , names=range(250000))
 test_x_df = test_x_df.fillna(0)
-test_y_df = pd.read_csv(r".\data\vibrational_data\y_test.csv", header=None) 
+test_y_df = pd.read_csv(r"..\data\vibrational_data\y_test.csv", header=None) 
 
 # Apply torch tensor
 X_train = torch.tensor(train_x_df.values, dtype=torch.float32)
