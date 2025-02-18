@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 from torch.utils.data import DataLoader, TensorDataset
-from cnn_1d_methods import train, plot_learning_curve, test_accuracy
+from cnn_1d_methods import plot_learning_curve, test_accuracy
 
 class Net(nn.Module):
     def __init__(self, input_size, num_classes):
@@ -29,12 +29,14 @@ test_losses = []
 train_accuracies = []
 test_accuracies = []
 
-input_size = 784 # TODO: Depends on how many time-segmented clips we pass in.
-num_classes = 6 # TODO: 6 (total including coarse and fine grain)?
+# Define parameters
+input_size = 250000
+num_classes = 6 
 lr = 0.01
-num_epochs = 5   # TODO: Change?
-batch_size = 3  # TODO: Change accordingly
+num_epochs = 5  
+batch_size = 2  
 
+# Pulling data from CSV
 train_x_df = pd.read_csv(r".\data\vibrational_data\x_train.csv", header=None, names=range(250000))
 train_x_df = train_x_df.fillna(0)
 train_y_df = pd.read_csv(r".\data\vibrational_data\y_train.csv", header=None) 
@@ -58,6 +60,7 @@ test_data = TensorDataset(X_test, squeezed_y_test)
 train_loader = DataLoader(dataset = train_data, batch_size = batch_size, shuffle = True)
 test_loader = DataLoader(dataset = test_data, batch_size = batch_size, shuffle = False)
 
+# Define train function
 def train(model, loss_fn, optimizer, train_loader, test_loader, loss_function, batch_size, num_epochs, device):
   # Clear the contents of these global variables
   # train_losses.clear()
@@ -80,12 +83,10 @@ def train(model, loss_fn, optimizer, train_loader, test_loader, loss_function, b
     # Get a new test set every epoch
     val_imgs, val_labels = next(dataiter)
     val_imgs, val_labels = val_imgs.to(device), val_labels.to(device)
-    # val_imgs = val_imgs.view(-1, input_size)
 
     for i, data in enumerate(train_loader):
       # Flatten images and load images/labels
       images, labels = data[0].cuda(), data[1].cuda()
-      # images = images.view(-1, input_size)
 
       # Zero collected gradients at each step
       optimizer.zero_grad()
@@ -131,6 +132,7 @@ def train(model, loss_fn, optimizer, train_loader, test_loader, loss_function, b
       print(f"Epoch [{epoch+1}/{num_epochs}] End. Duration: {epoch_duration:.2f} seconds, Loss: {epoch_loss:.4f}, Train Accuracy: {epoch_train_accuracy}, Val Accuracy: {epoch_test_accuracy}\n")
 
 
+# Create instance of model
 input_size = 250000
 net = Net(input_size, num_classes)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
