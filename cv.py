@@ -9,15 +9,15 @@ from ultralytics.utils.plotting import Annotator
 import subprocess
 
 # GLOBAL VARIABLES:
-input_video_path = "/home/fzshaik/signalsquadtest/senior design videos/fatimafridge.MOV"
+frame_counter = 0
+input_video_path = "Actions/laying down/bed7.mov"
 output_video_path = "output_video.mp4"
 model_pose_estimation = YOLO("yolo11n-pose.pt")  
 model_object_detection = YOLO("yolo11x.pt")
 object_detections_video = "results/output_videos/object_detction.mp4"
-final_result_path = "results/output_videos/pose_estimation_object_detection.mp4" 
-keypoints_video_path = "results/data/keypoints_video.txt"
-object_detections_path = "results/data/object_detections.txt"
-csv_file_path = "video_data.csv"
+final_result_path = "results/output_videos/pose_estimation_object_detection.mp4"
+object_data_file_path = "object_data.csv"
+pose_data_file_path = "pose_data.csv"
 
 
 # FUNCTIONS
@@ -28,7 +28,6 @@ def create_csv_file(csv_file_path):
     if not Path(csv_file_path).exists():
         with open(csv_file_path, mode='w', newline='') as file:
             writer_csv = csv.writer(file)
-            writer_csv.writerow(['Frame', 'Detections'])
             print(f"CSV file created at: {csv_file_path}")
     else:
         print(f"CSV file already exists at: {csv_file_path}")
@@ -90,6 +89,7 @@ def create_video_writer(video_cap, output_filename):
     frame_width = int(video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(video_cap.get(cv2.CAP_PROP_FPS))
+    print(fps)
     # initialize the FourCC and a video writer object
     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
     writer = cv2.VideoWriter(output_filename, fourcc, fps,
@@ -134,7 +134,7 @@ def object_detections(output_video_path, object_detections_video, model_object_d
     cap.release()
 
 #Pose Estimation Code:
-def process_pose_estimation_video(object_detections_video, final_result_path, model_pose_estimation, keypoints_video):
+def process_pose_estimation_video(object_detections_video, final_result_path, model_pose_estimation, csv_file_path, frame_counter):
     cap = cv2.VideoCapture(object_detections_video)
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -142,31 +142,51 @@ def process_pose_estimation_video(object_detections_video, final_result_path, mo
     last_frame_time_seconds = int(time.time())
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(final_result_path, fourcc, fps, (frame_width, frame_height))
-
-    frame_counter = 0
+    frame_counter = -1;
 
     while cap.isOpened():
         ret, frame = cap.read()
+        frame_counter+=1;
         if not ret:
             print("Can't receive frame (stream end?). Exiting ...")
             break
+        
 
         # Grab Results
         results = model_pose_estimation(frame)
         if not results:
+            results = 0
             continue
 
         result = results[0]
         keypoints = result.keypoints.xy.tolist()
         if not keypoints:
+            keypoints = 0
             continue
 
         keypoints = keypoints[0]
         if not keypoints:
+            keypoints = 0
             continue
+        data_to_store = []
 
-        pose_estimation_dict = {frame_counter: keypoints}
-        keypoints_video.append(pose_estimation_dict)  # Accumulate keypoints from video frame
+
+        with open(csv_file_path, mode='a', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+
+            # Ensure keypoints is a list before iterating
+            if isinstance(keypoints, int):  
+                formatted_keypoints = ["[0.0, 0.0]"] * 18  # Placeholder for missing keypoints
+            else:
+                formatted_keypoints = [f"[{x}, {y}]" for x, y in keypoints]
+
+            # Store frame counter and keypoints
+            data_to_store = [frame_counter] + formatted_keypoints
+
+            # Write to CSV
+            csv_writer.writerow(data_to_store)
+
+        data_to_store = []
 
         annotator = Annotator(frame)
         annotator.kpts(result.keypoints.data[0], result.orig_shape, 5, True)
@@ -176,8 +196,6 @@ def process_pose_estimation_video(object_detections_video, final_result_path, mo
         if frame_time > last_frame_time_seconds:
             last_frame_time_seconds = frame_time
             print("FPS:", frame_counter)
-            fps = frame_counter
-            frame_counter = 0
 
         cv2.putText(
             annotated_frame,
@@ -190,11 +208,8 @@ def process_pose_estimation_video(object_detections_video, final_result_path, mo
         )
         out.write(annotated_frame)
 
-        frame_counter += 1
-
     cap.release()
     out.release()
-    frame_counter = 0  # Resetting counter
 
 
 
@@ -210,7 +225,11 @@ key_objects = get_list_from_file(key_object_file_path)
 coco80_labels = get_list_from_file(coco80_lables_file_path)
 key_indexes = key_indexes_from_list(key_objects,coco80_labels)
 
-create_csv_file(csv_file_path)
 convert_mov_to_mp4(input_video_path, output_video_path)
-object_detections(output_video_path, object_detections_video, model_object_detection, csv_file_path, key_indexes)
-# process_pose_estimation_video(object_detections_video, final_result_path, model_pose_estimation, keypoints_video)
+create_csv_file(object_data_file_path)
+object_detections(output_video_path, object_detections_video, model_object_detection, object_data_file_path, key_indexes)
+# Pose Estimation Stuff
+create_csv_file(pose_data_file_path)
+process_pose_estimation_video(output_video_path, final_result_path, model_pose_estimation, pose_data_file_path, frame_counter)
+
+
