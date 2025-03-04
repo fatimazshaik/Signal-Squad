@@ -127,8 +127,8 @@ def is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, lef
     return is_horizontal and is_flat
 
 # GLOBAL VARS
-object_csv_file = "table csv/object_data_table6.csv"
-pose_csv_file = "table csv/pose_data_table6.csv"
+object_csv_file = "fridge csv/object_data_fridge7.csv"
+pose_csv_file = "fridge csv/pose_data_fridge7.csv"
 count_intersection = 0
 interest_frames= []
 action_type = []
@@ -192,26 +192,27 @@ for i in range(1, max_frame_count+1):
                 count_intersection += 1
     else:
         row_index = df_pose.query("Frame == " + str(i)).index.tolist()
-        right_shoulder = eval(df_pose.iloc[row_index]["Right Shoulder"].tolist()[0])
-        left_shoulder = eval(df_pose.iloc[row_index]["Left Shoulder"].tolist()[0])
+        if(row_index != []):
+            right_shoulder = eval(df_pose.iloc[row_index]["Right Shoulder"].tolist()[0])
+            left_shoulder = eval(df_pose.iloc[row_index]["Left Shoulder"].tolist()[0])
 
-        right_hip = eval(df_pose.iloc[row_index]["Right Hip"].tolist()[0])
-        left_hip = eval(df_pose.iloc[row_index]["Left Hip"].tolist()[0])
-        
-        left_knee = eval(df_pose.iloc[row_index]["Left Knee"].tolist()[0])
-        right_knee = eval(df_pose.iloc[row_index]["Right Knee"].tolist()[0])
+            right_hip = eval(df_pose.iloc[row_index]["Right Hip"].tolist()[0])
+            left_hip = eval(df_pose.iloc[row_index]["Left Hip"].tolist()[0])
+            
+            left_knee = eval(df_pose.iloc[row_index]["Left Knee"].tolist()[0])
+            right_knee = eval(df_pose.iloc[row_index]["Right Knee"].tolist()[0])
 
-        left_ankle = eval(df_pose.iloc[row_index]["Left Ankle"].tolist()[0])
-        right_ankle = eval(df_pose.iloc[row_index]["Right Ankle"].tolist()[0])
+            left_ankle = eval(df_pose.iloc[row_index]["Left Ankle"].tolist()[0])
+            right_ankle = eval(df_pose.iloc[row_index]["Right Ankle"].tolist()[0])
 
-        person_lying_down = 0
-        person_lying_down = is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle)
-        # print("left_shoulder", left_shoulder)
+            person_lying_down = 0
+            person_lying_down = is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle)
+            # print("left_shoulder", left_shoulder)
 
-        if(person_lying_down): #og code: iou<0.55 and iou>0.53
-            interest_frames.append(i)
-            count_intersection += 1
-            action_type.append("Laying on A Bed")
+            if(person_lying_down): #og code: iou<0.55 and iou>0.53
+                interest_frames.append(i)
+                count_intersection += 1
+                action_type.append("Laying on A Bed")
 
 # print(action_type)
 # Get max action_type
@@ -225,8 +226,8 @@ for x in mode_list:
 # Get associated max and min frames
 max_frame = max(interest_frames)
 min_frame = min(interest_frames)
-start_time = min_frame/30
-end_time = max_frame/30
+start_time = min_frame
+end_time = max_frame
 
 # Print associated start/end time
 print("Start Time ", start_time)
