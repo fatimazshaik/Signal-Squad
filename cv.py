@@ -10,7 +10,7 @@ import subprocess
 
 # GLOBAL VARIABLES:
 frame_counter = 0
-input_video_path = "Actions/laying down/bed7.mov"
+input_video_path = "Actions/fridge/fridge7.mov"
 output_video_path = "output_video.mp4"
 model_pose_estimation = YOLO("yolo11n-pose.pt")  
 model_object_detection = YOLO("yolo11x.pt")
