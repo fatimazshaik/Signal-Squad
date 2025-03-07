@@ -126,9 +126,13 @@ def is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, lef
     # Return True if either method detects lying down
     return is_horizontal and is_flat
 
+# # Define input action and number
+# folder = "bed"
+# number = 7
+
 # GLOBAL VARS
-object_csv_file = "fridge csv/object_data_fridge7.csv"
-pose_csv_file = "fridge csv/pose_data_fridge7.csv"
+object_csv_file = "fridge_csv/object_data_fridge7.csv"
+pose_csv_file = "fridge_csv/pose_data_fridge7.csv"
 count_intersection = 0
 interest_frames= []
 action_type = []
@@ -136,6 +140,21 @@ ious = []
 no_person = True
 person_index = 0
 object_index = 0
+
+# VARS for Path
+csv_file = "output_vector_path/fridge7-person-tracking.csv"
+threshold_fridge = 100  # Threshold for detecting a sitting down or standing up event (in pixels)
+threshold_chair = 100
+threshold_couch = 50
+threshold_bed = 150
+action_events = []
+
+# Initialize lists to store y_positions and frame indexes
+y_positions = []
+frame_indexes = []
+
+laying_frame = 0
+up_frame = 0
 
 # MAIN CODE
 df_object = pd.read_csv(object_csv_file, header=None, names=['Frame', 'Object', 'x_center', 'y_center', 'width', 'height'])
@@ -178,18 +197,92 @@ for i in range(1, max_frame_count+1):
             bb2 = reformat_bb(x_center_bb2, y_center_bb2, width_bb2, height_bb2)
             iou = calculate_IOU(bb1, bb2)
 
-            if(iou>=0.3 and  (df_object.loc[row_indices[object_index], 'Object'] == "chair")): #Check if Sitting on Chair Besides Table
-                interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Sitting on Table")
-                count_intersection += 1
-            elif(iou>=0.45) and (df_object.loc[row_indices[object_index], 'Object']) == "refrigerator": #Check if Opening Fridge
-                interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Opening Fridge")
-                count_intersection += 1
-            elif((iou>=0.4) and (df_object.loc[row_indices[object_index], 'Object'] == "couch")): #Check if Sitting On Couch
-                interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Sitting on Couch")
-                count_intersection += 1
+            # Sitting on the chair
+            if (df_object.loc[row_indices[object_index], 'Object'] == "chair"):
+                if (iou > 0.3):
+                    interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+                    action_type.append("Sitting on Table")
+                    count_intersection += 1
+                
+                    current_y = y_positions[i]
+                    previous_y = y_positions[i - 30]
+                    previous_y_up = y_positions[i - 30]
+                    frame_idx = frame_indexes[i]
+                    
+                    # Detect "sitting down" (laying down): Significant decrease in y_position
+                    if (current_y > previous_y + threshold_chair) and up_frame == 0:
+                        action_events.append(('Sitting Down', frame_idx, current_y))
+                        if (frame_idx - laying_frame > 10):
+                            laying_frame = frame_idx
+                    
+                    # Detect "standing up": Significant increase in y_position
+                    elif current_y < previous_y_up - threshold_chair and laying_frame != 0:
+                        action_events.append(('Standing Up', frame_idx, current_y))
+                        #if (frame_idx - up_frame > 20):
+                        up_frame = frame_idx
+
+            # Opening the fridge
+            elif (df_object.loc[row_indices[object_index], 'Object'] == "refrigerator"):
+                if (iou>=0.45): 
+                    interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+                    action_type.append("Opening Fridge")
+                    count_intersection += 1
+
+                current_y = y_positions[i]
+                previous_y = y_positions[i - 20]
+                previous_y_up = y_positions[i - 20]
+                frame_idx = frame_indexes[i]
+
+                # Detect "sitting down" (laying down): Significant decrease in y_position
+                if (current_y > previous_y + threshold_fridge) and up_frame == 0:
+                    action_events.append(('Sitting Down', frame_idx, current_y))
+                    if (frame_idx - laying_frame > 10):
+                        laying_frame = frame_idx
+                
+                # Detect "standing up": Significant increase in y_position
+                elif current_y < previous_y_up - threshold_fridge and laying_frame != 0:
+                    action_events.append(('Standing Up', frame_idx, current_y))
+                    #if (frame_idx - up_frame > 20):
+                    up_frame = frame_idx
+
+            # Sitting on couch
+            elif (df_object.loc[row_indices[object_index], 'Object'] == "couch"):
+                if (iou>=0.4):
+                    interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+                    action_type.append("Sitting on Couch")
+                    count_intersection += 1
+
+                    current_y = y_positions[i]
+                    previous_y = y_positions[i - 10]
+                    previous_y_up = y_positions[i - 10]
+                    frame_idx = frame_indexes[i]
+                    
+                    # Detect "sitting down" (laying down): Significant decrease in y_position
+                    if (current_y > previous_y + threshold_couch) and up_frame == 0:
+                        action_events.append(('Sitting Down', frame_idx, current_y))
+                        if (frame_idx - laying_frame > 10):
+                            laying_frame = frame_idx
+                    
+                    # Detect "standing up": Significant increase in y_position
+                    elif current_y < previous_y_up - threshold_couch and laying_frame != 0:
+                        action_events.append(('Standing Up', frame_idx, current_y))
+                        #if (frame_idx - up_frame > 20):
+                        up_frame = frame_idx
+
+
+            # if(iou>=0.3 and  (df_object.loc[row_indices[object_index], 'Object'] == "chair")): #Check if Sitting on Chair Besides Table
+            #     interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            #     action_type.append("Sitting on Table")
+            #     count_intersection += 1
+            # elif(iou>=0.45) and (df_object.loc[row_indices[object_index], 'Object']) == "refrigerator": #Check if Opening Fridge
+            #     interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            #     action_type.append("Opening Fridge")
+            #     count_intersection += 1
+            # elif((iou>=0.4) and (df_object.loc[row_indices[object_index], 'Object'] == "couch")): #Check if Sitting On Couch
+            #     interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            #     action_type.append("Sitting on Couch")
+            #     count_intersection += 1
+
     else:
         row_index = df_pose.query("Frame == " + str(i)).index.tolist()
         if(row_index != []):
@@ -213,6 +306,23 @@ for i in range(1, max_frame_count+1):
                 interest_frames.append(i)
                 count_intersection += 1
                 action_type.append("Laying on A Bed")
+
+            current_y = y_positions[i]
+            previous_y = y_positions[i - 20]
+            previous_y_up = y_positions[i - 20]
+            frame_idx = frame_indexes[i]
+            
+            # Detect "sitting down" (laying down): Significant decrease in y_position
+            if (current_y > previous_y + threshold_bed) and up_frame == 0:
+                action_events.append(('Sitting Down', frame_idx, current_y))
+                if (frame_idx - laying_frame > 10):
+                    laying_frame = frame_idx
+            
+            # Detect "standing up": Significant increase in y_position
+            elif current_y < previous_y_up - threshold_bed and laying_frame != 0:
+                action_events.append(('Standing Up', frame_idx, current_y))
+                #if (frame_idx - up_frame > 20):
+                up_frame = frame_idx
 
 # print(action_type)
 # Get max action_type
