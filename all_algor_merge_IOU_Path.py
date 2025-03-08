@@ -132,8 +132,8 @@ def is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, lef
 # number = 7
 
 # GLOBAL VARS
-object_csv_file = "fridge_csv/object_data_fridge7.csv"
-pose_csv_file = "fridge_csv/pose_data_fridge7.csv"
+object_csv_file = "/home/jsguo/EEC174/Signal-Squad/table_csv/object_data_table1.csv"
+pose_csv_file = "/home/jsguo/EEC174/Signal-Squad/table_csv/pose_data_table1.csv"
 count_intersection = 0
 interest_frames= []
 action_type = []
@@ -143,8 +143,8 @@ person_index = 0
 object_index = 0
 
 # VARS for Path
-csv_file = "output_vector_path/fridge7-person-tracking.csv"
-threshold_fridge = 100  # Threshold for detecting a sitting down or standing up event (in pixels)
+csv_file = "/home/jsguo/EEC174/Signal-Squad/output_vector_path/bed1-person-tracking.csv"
+threshold_fridge = 700  # Threshold for detecting a sitting down or standing up event (in pixels)
 threshold_chair = 100
 threshold_couch = 50
 threshold_bed = 150
@@ -152,6 +152,7 @@ action_events = []
 
 # Initialize lists to store y_positions and frame indexes
 y_positions = []
+x_positions = []
 frame_indexes = []
 
 laying_frame = 0
@@ -165,10 +166,12 @@ with open(csv_file, mode='r') as file:
     for row in reader:
         frame_idx = int(row[1])
         y_position = int(row[3])
+        x_position = int(row[2])
         
         # Store frame index and y_position
         frame_indexes.append(frame_idx)
         y_positions.append(y_position)
+        x_positions.append(x_position)
 
 # MAIN CODE
 df_object = pd.read_csv(object_csv_file, header=None, names=['Frame', 'Object', 'x_center', 'y_center', 'width', 'height'])
@@ -219,7 +222,7 @@ for i in range(1, max_frame_count+1):
                     action_type.append("Sitting on Table")
                     count_intersection += 1
 
-                    if (i > 30 and i < max_frame_count-1):
+                    if (i > 30 and i < len(y_positions)):
                         current_y = y_positions[i]
                         previous_y = y_positions[i - 30]
                         previous_y_up = y_positions[i - 30]
@@ -244,21 +247,22 @@ for i in range(1, max_frame_count+1):
                     action_type.append("Opening Fridge")
                     count_intersection += 1
 
-                if (i > 30 and i < len(y_positions)):
-                    print(i)
+                if (i > 20 and i < len(y_positions)):
                     current_y = y_positions[i]
-                    previous_y = y_positions[i - 20]
-                    previous_y_up = y_positions[i - 20]
+                    previous_y = x_positions[i - 20]
+                    previous_y_up = x_positions[i - 20]
                     frame_idx = frame_indexes[i]
 
+                    print(i, current_y, previous_y)
+
                     # Detect "sitting down" (laying down): Significant decrease in y_position
-                    if (current_y > previous_y + threshold_fridge) and up_frame == 0:
+                    if (current_y < previous_y - threshold_fridge) and up_frame == 0:
                         action_events.append(('Sitting Down', frame_idx, current_y))
                         if (frame_idx - laying_frame > 10):
                             laying_frame = frame_idx
                     
                     # Detect "standing up": Significant increase in y_position
-                    elif current_y < previous_y_up - threshold_fridge and laying_frame != 0:
+                    elif current_y > previous_y_up + threshold_fridge and laying_frame != 0:
                         action_events.append(('Standing Up', frame_idx, current_y))
                         #if (frame_idx - up_frame > 20):
                         up_frame = frame_idx
@@ -270,7 +274,7 @@ for i in range(1, max_frame_count+1):
                     action_type.append("Sitting on Couch")
                     count_intersection += 1
 
-                    if (i > 30 and i < max_frame_count-1):
+                    if (i > 30 and i < len(y_positions)):
                         current_y = y_positions[i]
                         previous_y = y_positions[i - 10]
                         previous_y_up = y_positions[i - 10]
@@ -326,7 +330,7 @@ for i in range(1, max_frame_count+1):
                 count_intersection += 1
                 action_type.append("Laying on A Bed")
 
-            if (i > 30 and i < max_frame_count-1):
+            if (i > 30 and i < len(y_positions)):
                 current_y = y_positions[i]
                 previous_y = y_positions[i - 20]
                 previous_y_up = y_positions[i - 20]
@@ -359,8 +363,15 @@ min_frame = min(interest_frames)
 start_time = min_frame
 end_time = max_frame
 
+
 # Print associated start/end time
+print("IOU")
 print("Start Time ", start_time)
 print("End Time ", end_time)
 # Print duration
 print("Duration: ", end_time-start_time)
+
+print("Path")
+print("up_frame", up_frame)
+print("laying_frame", laying_frame)
+print("Difference", laying_frame-up_frame)
