@@ -363,6 +363,22 @@ min_frame = min(interest_frames)
 start_time = min_frame
 end_time = max_frame
 
+if (abs(start_time - up_frame) < 30):
+    merge_start_time = (start_time + up_frame)/2
+else:
+    if (mode == "Laying on A Bed"):
+        merge_start_time = up_frame
+    else: 
+        merge_start_time = start_time
+
+if (abs(end_time - laying_frame) < 30):
+    merge_end_time = (end_time + laying_frame)/2
+else:
+    if (mode == "Laying on A Bed"):
+        merge_end_time = laying_frame
+    else: 
+        merge_end_time = end_time
+
 
 # Print associated start/end time
 print("IOU")
