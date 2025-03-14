@@ -3,12 +3,13 @@ import pandas as pd
 import math
 import numpy as np
 import statistics
+import csv
 
 # FUNCTIONS
-def reformat_bb(x_min, y_min, width, height):
-    x_max = int(x_min + width)
-    y_max = int(y_min + height)
-    return [int(x_min), int(y_min), x_max, y_max]
+def reformat_bb(bb):
+    x_max = int(bb[0] + bb[3])
+    y_max = int(bb[1] + bb[2])
+    return [int(bb[0]), int(bb[1]), x_max, y_max]
 
 def calculate_IOU(box1, box2):
     x_min_inter = max(box1[0], box2[0])
@@ -127,8 +128,10 @@ def is_person_lying_down(left_shoulder, right_shoulder, left_hip, right_hip, lef
     return is_horizontal and is_flat
 
 # GLOBAL VARS
-object_csv_file = "object_data.csv"
-pose_csv_file = "pose_data.csv"
+object_csv_file = "object_data_all_4.csv"
+# object_csv_file = "object_data.csv"
+pose_csv_file = "pose_data_all_4.csv"
+# pose_csv_file = "pose_data.csv"
 count_intersection = 0
 table_true = 0
 new_action = 0
@@ -141,6 +144,10 @@ no_person = True
 person_index = 0
 object_index = 0
 couch_flag = 0
+bed_flag = 0
+chair_flag = 0
+refrigerator_flag = 0
+person_flag = 0
 
 # MAIN CODE
 df_object = pd.read_csv(object_csv_file, header=None, names=['Frame', 'Object', 'x_center', 'y_center', 'width', 'height'])
@@ -155,55 +162,69 @@ for i in range(1, max_frame_count+1):
     row_indices = df_object.query("Frame == " + str(i)).index.tolist()
     for x in row_indices:
         if(df_object.loc[x,'Object'] == "couch"):
-            couch_flag = 1;
-    if ((len(df_object[df_object.Frame==i])) >= 2):
-        #check if person
-        if(df_object.loc[row_indices[0],'Object'] == "person"):
-            no_person = False
-            person_index = 0
-            object_index = 1
-        elif (df_object.loc[row_indices[1],'Object'] == "person"):
-            no_person = False
-            person_index = 1
-            object_index = 0
+            couch_flag = 1
+            couch_bb = [df_object.loc[x,'x_center'], df_object.loc[x,'y_center'], df_object.loc[x,'width'], df_object.loc[x,'height']]
+
+        elif(df_object.loc[x,'Object'] == "bed"):
+            bed_flag = 1
+            bed_bb = [df_object.loc[x,'x_center'], df_object.loc[x,'y_center'], df_object.loc[x,'width'], df_object.loc[x,'height']]
+
+        elif(df_object.loc[x,'Object'] == "refrigerator"):
+            refrigerator_flag = 1
+            refrigerator_bb = [df_object.loc[x,'x_center'], df_object.loc[x,'y_center'], df_object.loc[x,'width'], df_object.loc[x,'height']]
+
+        elif(df_object.loc[x,'Object'] == "chair"):
+            chair_flag = 1;
+            chair_bb = [df_object.loc[x,'x_center'], df_object.loc[x,'y_center'], df_object.loc[x,'width'], df_object.loc[x,'height']]
+
+        elif(df_object.loc[x,'Object'] == "person"):
+            person_flag = 1;
+            person_bb = [df_object.loc[x,'x_center'], df_object.loc[x,'y_center'], df_object.loc[x,'width'], df_object.loc[x,'height']]
         else:
-            no_person = True
-        
-        if(not no_person):
-            new_action = 0
-            x_center_bb1 = df_object.loc[row_indices[0], 'x_center']
-            x_center_bb2 = df_object.loc[row_indices[1], 'x_center']
-
-            y_center_bb1 = df_object.loc[row_indices[0], 'y_center']
-            y_center_bb2 = df_object.loc[row_indices[1], 'y_center']
-
-            width_bb1 = df_object.loc[row_indices[0], 'width']
-            width_bb2 = df_object.loc[row_indices[1], 'width']
-
-            height_bb1 = df_object.loc[row_indices[0], 'height']
-            height_bb2 = df_object.loc[row_indices[1], 'height']
-
-            bb1 = reformat_bb(x_center_bb1, y_center_bb1, width_bb1, height_bb1)
-            bb2 = reformat_bb(x_center_bb2, y_center_bb2, width_bb2, height_bb2)
-            iou = calculate_IOU(bb1, bb2)
+            person_flag = 0
+    if ((len(df_object[df_object.Frame==i])) >= 2 and person_flag):
+        new_action = 0
+        if(couch_flag):
+            bb1 = reformat_bb(couch_bb)
+            bb2 = reformat_bb(person_bb)
+        elif (bed_flag):
+            bb1 = reformat_bb(bed_bb)
+            bb2 = reformat_bb(person_bb)
+        elif (chair_flag):
+            bb1 = reformat_bb(chair_bb)
+            bb2 = reformat_bb(person_bb)
+        elif (refrigerator_bb):
+            bb1 = reformat_bb(refrigerator_bb)
+            bb2 = reformat_bb(person_bb)
+        else:
+            bb1 = [0,0,0,0]
+            bb2 = [0,0,0,0]
+        iou = calculate_IOU(bb1, bb2)
             
-            if((iou>=0.35) and (df_object.loc[row_indices[object_index], 'Object'] == "couch") ): #Check if Sitting On Couch
+        if(iou>=0.2 and bed_flag):
                 interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Sitting on Couch")
-                count_intersection += 1
-            elif(iou>=0.3 and  (df_object.loc[row_indices[object_index], 'Object'] == "chair") and not couch_flag): #Check if Sitting on Chair Besides Table
-                interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Sitting on Table")
-                count_intersection += 1
-            elif(iou>=0.45) and (df_object.loc[row_indices[object_index], 'Object']) == "refrigerator": #Check if Opening Fridge
-                interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
-                action_type.append("Opening Fridge")
-                count_intersection += 1
+                action_type.append("Laying on Bed")
+
+        elif((iou>=0.35) and couch_flag): #Check if Sitting On Couch
+            interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            action_type.append("Sitting on Couch")
+
+        elif(iou>=0.3 and refrigerator_flag and not bed_flag): #Check if Opening Fridge og 45
+            interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            action_type.append("Opening Fridge")
+
+        elif(iou>=0.35 and chair_flag and not couch_flag): #Check if Sitting on Chair Besides Table
+            interest_frames.append(df_object.loc[row_indices[person_index], 'Frame'])
+            action_type.append("Sitting on Table")
+  
     #Else if statement:
     elif (action_type != []) and (i in df_object.index): 
         if(len(df_object[df_object.Frame==i])==1) and (df_object.loc[i,"Object"]!= "person"):
-            if new_action == 30:#og 50
+            if new_action == 30: #og 50
+                bed_flag = 0
                 couch_flag = 0
+                refrigerator_flag = 0
+                chair_flag = 0
                 action_type_all.append(action_type)
                 action_type = []
                 interest_frames_all.append(interest_frames)
@@ -235,34 +256,44 @@ for i in range(1, max_frame_count+1):
             if(person_lying_down): #og code: iou<0.55 and iou>0.53
                 interest_frames.append(i)
                 count_intersection += 1
-                action_type.append("Laying on A Bed")
+                action_type.append("Laying on Bed")
+
     if((i==max_frame_count) and (action_type != [])): # edge case
         action_type_all.append(action_type)
         action_type = []
         interest_frames_all.append(interest_frames)
         interest_frames = []
+    
 
 
 # print(action_type)
 # Get max action_type
 # mode = statistics.mode(action_type)
-print("Number of Actions: ", len(action_type_all))
-for i in range(len(action_type_all)):
-    action = action_type_all[i]
-    target_frames = interest_frames_all[i]
-    mode = statistics.mode(action)
+count_actions = 0
+
+with open('actions.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    
+    # Write header
+    writer.writerow(["Action Type", "Start Frame", "End Frame"])
+    for i in range(len(action_type_all)):
+        action = action_type_all[i]
+        target_frames = interest_frames_all[i]
+        mode = statistics.mode(action)
     # print(action)
-    if(action[0] == 'Sitting on Couch' and action[len(action)-1] == 'Sitting on Couch'):
-        mode = 'Sitting on Couch'
-    print("Action Type", mode)
-    # Get associated max and min frames
-    max_frame = max(target_frames)
-    min_frame = min(target_frames)
-    start_time = min_frame/30
-    end_time = max_frame/30
-    # Print associated start/end time
-    print("Start Time ", start_time)
-    print("End Time ", end_time)
-    # Print duration
-    print("Duration: ", end_time-start_time)
-    print()
+        if(len(action) > 10):
+            if(action[0] == 'Sitting on Couch' and action[len(action)-1] == 'Sitting on Couch'):
+                mode = 'Sitting on Couch'
+            if(action[0] == 'Laying on Bed' and action[len(action)-1] == 'Laying on Bed'):
+                mode = 'Laying on Bed'
+        # Get associated max and min frames
+            count_actions +=1
+            max_frame = max(target_frames)
+            min_frame = min(target_frames)
+            writer.writerow([mode, min_frame, max_frame])
+            print("Action Type", mode)
+            print("Start Frame ", max_frame)
+            print("End Frame ", min_frame)
+            print("Duration: ", max_frame-min_frame)
+        print()
+print("Number of Actions: ", count_actions)
