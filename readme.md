@@ -68,21 +68,21 @@ To run the Computer Vision Pipeline:
 
 ### Code
 
-* `IOU_Vector_Generation.py` - This program takes an input video (the path can be modified using `input_video_path`variable), converts it to MP4 format if necessary, and processes it frame by frame using YOLOv11’s object detection and pose estimation models. The outputs of these models are stored in two CSV files:
-    1. Object detection data – Contains the frame number, detected objects, and their bounding boxes.
-    2. Pose data – Includes the frame number and the coordinates of key human features (e.g., nose, right ear, left ear, left knee, right shoulder, etc.).
+* `IOU_Vector_Generation.py` - This program takes an input video (the path can be modified using `input_video_path` variable), converts it to MP4 format if necessary, and processes it frame by frame using YOLOv11’s object detection and pose estimation models. The outputs of these models are stored in two CSV files:
+    - Object detection data – Contains the frame number, detected objects, and their bounding boxes.
+    - Pose data – Includes the frame number and the coordinates of key human features (e.g., nose, right ear, left ear, left knee, right shoulder, etc.).
 This can be run on the terminal using `python IOU_Vector_Generation.py`. Run this program first when using the IOU Algorithm.
 
 * `IOU_Activity_Detection.py` - This program takes in two input CSV files that are outputted as result of `IOU_Vector_Generation.py`.
 Change `object_csv_file` variable to equal the object detection data CSV path and `pose_csv_file` variable to equal the pose data CSV path. It uses these two files to perform action detection using IOU (Intersection Over Union) & pose rules. It outputs the time stamps and action type in a CSV file called `actions.csv`. The format of the `actions.csv` is Action Type, Start Frame, and End Frame.
 
-* `Path_Person_Vector_Generation.py`: This program takes in a video and outputs the path tracking of the person. It contain ['frame', 'x', 'y'] and for each frame for each frame as a .csv file.
+* `Path_Person_Vector_Generation.py`: This program takes in a video and outputs the path tracking of the person. It contains ['frame', 'x', 'y'] and for each frame, as a CSV file.
 
-* `Path_Object_Vector-Generation.py`: This program takes in a video and output object with more than 70% confidence level in the video. It outputs ["frame", "object"] for each frame as a .csv file.
+* `Path_Object_Vector-Generation.py`: This program takes in a video and outputs an object with more than 70% confidence level in the video. It outputs ["frame", "object"] for each frame as a CSV file.
 
 * `Path_Actvity_Detection.py`: This program takes in both .csv files. It segments the video into segmentation. Then output the activity detected for each segment and their start/end time.
 
-* `Merge_Combinging Result.py` to combine the result from path tracking and IOU algorithm. This file takes two .csv result data and combines the result together. It output a .csv file containing ["Action", "Start Time", "End Time"].
+* `Merge_Combinging Result.py` to combine the result from path tracking and IOU algorithm. This file takes two .csv result data and combines the results together. It outputs a CSV file containing ["Action", "Start Time", "End Time"].
 
 ### Dataset
 
