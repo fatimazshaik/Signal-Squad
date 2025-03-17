@@ -1,6 +1,8 @@
-# Computer Vision Pipeline Code
+# Human Activity Detection Using Multimodal Data Documentation
 
-## Environment Set Up:
+##Computer Vision Pipeline Code
+
+### Environment Set Up:
 
 To run `IOU_Vector_Generation.py`, a conda environment is required to set up some dependencies. Follow these steps:
 
@@ -34,7 +36,7 @@ To run `IOU_Vector_Generation.py`, a conda environment is required to set up som
 
   
 
-## Process Pipeline
+### Process Pipeline
 
 To run the Computer Vision Pipeline:
 
@@ -64,7 +66,7 @@ To run the Computer Vision Pipeline:
 * Before running, change the input to the output from `IOU_Activity_Detection.py` and `Path_Actvity_Detection.py`.
 * Run `python3 Path_Actvity_Detection.py` to get object detection and duration using path tracking method. 
 
-## Code
+### Code
 
 * `IOU_Vector_Generation.py` - This program takes an input video (the path can be modified using `input_video_path`variable), converts it to MP4 format if necessary, and processes it frame by frame using YOLOv11’s object detection and pose estimation models. The outputs of these models are stored in two CSV files:
 1. Object detection data – Contains the frame number, detected objects, and their bounding boxes.
@@ -82,15 +84,15 @@ Change `object_csv_file` variable to equal the object detection data CSV path an
 
 * `Merge_Combinging Result.py` to combine the result from path tracking and IOU algorithm. This file takes two .csv result data and combines the result together. It output a .csv file containing ["Action", "Start Time", "End Time"].
 
-## Dataset
+### Dataset
 
 Videos are located on the shared Google Drive, as they are too big to upload to the Git
 
   
 
-# Sensor and Vibrational Data
+## Sensor and Vibrational Data
 
-## Process Pipeline
+### Process Pipeline
 
 1. Plug hard drive into the server (Raspberry Pi)
 
@@ -104,7 +106,7 @@ Videos are located on the shared Google Drive, as they are too big to upload to 
 
   
 
-## Code
+### Code
 
 *  `1d_cnn_classifier.ipynb`: Program to train 1D CNN, utilized to train each activity dataset separately. To run the program, download the file, upload the corresponding datasets for a single activity, and run the Jupyter Notebook. To train multiple activities, reupload the corresponding datasets for another activity, alter paths when loading the data, and run the Notebook again.
 
@@ -114,7 +116,7 @@ Videos are located on the shared Google Drive, as they are too big to upload to 
 
 *  `save_data_csv.py`: This program collects the vibrational amplitude data stored in the numpy files of the hard drive and puts them in a csv file outputted by the program.
 
-## Dataset
+### Dataset
 
 * `compiled_vibration_data_train`: Folder that contains the file output of the `majority_vote_classifier_output.py` script.
 
