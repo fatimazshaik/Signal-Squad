@@ -1,6 +1,6 @@
 # Human Activity Detection Using Multimodal Data Documentation
 
-##Computer Vision Pipeline Code
+## Computer Vision Pipeline Code
 
 ### Environment Set Up:
 
