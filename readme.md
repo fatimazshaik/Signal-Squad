@@ -90,7 +90,7 @@ Videos are located on the shared Google Drive, as they are too big to upload to 
 
   
 
-## Sensor and Vibrational Data
+## Vibrational Pipeline
 
 ### Process Pipeline
 
