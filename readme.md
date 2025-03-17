@@ -110,7 +110,7 @@ Videos are located on the shared Google Drive, as they are too big to upload to 
 
 *  `1d_cnn_classifier.ipynb`: Program to train 1D CNN, utilized to train each activity dataset separately. To run the program, download the file, upload the corresponding datasets for a single activity, and run the Jupyter Notebook. To train multiple activities, reupload the corresponding datasets for another activity, alter paths when loading the data, and run the Notebook again.
 
-  * When testing, this program was run through `Google Colab` as a GPU would speed up training and running time. Additionally, both students working on this program were unable to log into the Library VPN due to an unknown error, thus were unable to connect to the class server to utilize the provided GPUs.
+- When testing, this program was run through `Google Colab` as a GPU would speed up training and running time. Additionally, both students working on this program were unable to log into the Library VPN due to an unknown error, thus were unable to connect to the class server to utilize the provided GPUs.
 
 *  `majority_vote_classifier_output.py`: The program to collect the amplitudes of the vibrational propagations and their associated binary, ground-truth labels (0-no activity, 1-activity occurring) based on a specific window size that can be set in the code. The code utilizes an array of timestamps in which the activity of interest has occurred, collects that data from the hard drive, and utilizes a majority voting algorithm to assign each window of data to a binary label. The code outputs two csv files: window_amplitude.csv and binary_output.csv, where each row of both csv files represent a window of data.
 
