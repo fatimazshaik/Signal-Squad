@@ -48,29 +48,29 @@ To run the Computer Vision Pipeline:
 
 2. Run the IOU Algorithm:
 
-* Run `IOU_Vector_Generation.py` by typing `python IOU_Vector_Generation.py` on terminal
+  - Run `IOU_Vector_Generation.py` by typing `python IOU_Vector_Generation.py` on terminal
 
-* Change the input files path in `IOU_Activity_Detection.py` to match the files outputted by `IOU_Vector_Generation.py`. Run the code by typing `python IOU_Activity_Detection.py` on the terminal
+  - Change the input files path in `IOU_Activity_Detection.py` to match the files outputted by `IOU_Vector_Generation.py`. Run the code by typing `python IOU_Activity_Detection.py` on the terminal
 
   
 
 3. Run Path Algorithm:
 
-* Run `Path_Person_Vector_Generation.py` for getting the path tracking vector of the person. This keep track of the (x,y) of the person for each frame.
+  - Run `Path_Person_Vector_Generation.py` for getting the path tracking vector of the person. This keep track of the (x,y) of the person for each frame.
 
-* Run `python3 Path_Object_Vector-Generation.py` for getting the object detection csv. This csv keep track of all object in different frames.
-* Change the input files for `python3 Path_Actvity_Detection.py` the output of two previous vector generation program. Then run the program.  
+  - Run `python3 Path_Object_Vector-Generation.py` for getting the object detection csv. This csv keep track of all object in different frames.
+  - Change the input files for `python3 Path_Actvity_Detection.py` the output of two previous vector generation program. Then run the program.  
 
 4. Run Merged Algorithm:
 
-* Before running, change the input to the output from `IOU_Activity_Detection.py` and `Path_Actvity_Detection.py`.
-* Run `python3 Path_Actvity_Detection.py` to get object detection and duration using path tracking method. 
+  - Before running, change the input to the output from `IOU_Activity_Detection.py` and `Path_Actvity_Detection.py`.
+  - Run `python3 Path_Actvity_Detection.py` to get object detection and duration using path tracking method. 
 
 ### Code
 
 * `IOU_Vector_Generation.py` - This program takes an input video (the path can be modified using `input_video_path`variable), converts it to MP4 format if necessary, and processes it frame by frame using YOLOv11’s object detection and pose estimation models. The outputs of these models are stored in two CSV files:
-1. Object detection data – Contains the frame number, detected objects, and their bounding boxes.
-2. Pose data – Includes the frame number and the coordinates of key human features (e.g., nose, right ear, left ear, left knee, right shoulder, etc.).
+  1. Object detection data – Contains the frame number, detected objects, and their bounding boxes.
+  2. Pose data – Includes the frame number and the coordinates of key human features (e.g., nose, right ear, left ear, left knee, right shoulder, etc.).
 This can be run on the terminal using `python IOU_Vector_Generation.py`. Run this program first when using the IOU Algorithm.
 
 * `IOU_Activity_Detection.py` - This program takes in two input CSV files that are outputted as result of `IOU_Vector_Generation.py`.
