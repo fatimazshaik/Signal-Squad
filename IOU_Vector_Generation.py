@@ -10,8 +10,8 @@ import subprocess
 
 # GLOBAL VARIABLES:
 frame_counter = 0
-input_video_path = "all_4_actions.mp4"
-output_video_path = input_video_path
+input_video_path = "all_4_actions.mov" #Should be an .mov file otherwise change output_video_path
+output_video_path = "video.mp4"
 model_pose_estimation = YOLO("yolo11n-pose.pt")  
 model_object_detection = YOLO("yolo11x.pt")
 object_detections_video = "final_result_test/All_couch/all_4_object_detection.mp4"
