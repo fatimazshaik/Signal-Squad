@@ -59,11 +59,13 @@ To run the Computer Vision Pipeline:
     - Run `Path_Person_Vector_Generation.py` for getting the path tracking vector of the person. This keep track of the (x,y) of the person for each frame.
 
     - Run `python3 Path_Object_Vector-Generation.py` for getting the object detection csv. This csv keep track of all object in different frames.
+   
     - Change the input files for `python3 Path_Actvity_Detection.py` the output of two previous vector generation program. Then run the program.  
 
 4. Run Merged Algorithm:
 
     - Before running, change the input to the output from `IOU_Activity_Detection.py` and `Path_Actvity_Detection.py`.
+  
     - Run `python3 Path_Actvity_Detection.py` to get object detection and duration using path tracking method. 
 
 ### Code
